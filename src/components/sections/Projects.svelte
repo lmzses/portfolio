@@ -28,7 +28,7 @@
 		{
 			title: 'CognitoAI',
 			image: '/images/cognita-ai.png', // placeholder image
-			description: 'A minimalist collection of AI tools built using Astro and Tailwind.',
+			description: 'A minimalist collection of web and AI tools. Built using Astro and Tailwind. ',
 			tech: [tags.ASTRO, tags.TAILWIND],
 			githubLink: 'https://github.com/lmoisz03/CognitoAI',
 			liveLink: 'https://cognito-ai.vercel.app/'
