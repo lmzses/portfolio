@@ -30,7 +30,7 @@
 			image: '/images/cognita-ai.png', // placeholder image
 			description: 'A minimalist collection of web and AI tools. Built using Astro and Tailwind. ',
 			tech: [tags.ASTRO, tags.TAILWIND],
-			githubLink: 'https://github.com/lmoisz03/CognitoAI',
+			githubLink: 'https://github.com/lmzses/CognitoAI',
 			liveLink: 'https://cognito-ai.vercel.app/'
 		},
 		{
@@ -39,8 +39,8 @@
 			description:
 				'Simple personal portfolio design. Built from scratch using SvelteKit and Tailwind, from my phone.',
 			tech: [tags.SVELTE, tags.TAILWIND, tags.TYPESCRIPT],
-			githubLink: 'https://github.com/Lmoisz/lzmses.github.io',
-			liveLink: 'https://lzmses.github.io'
+			githubLink: 'https://github.com/lmzses/portfolio',
+			liveLink: 'https://lmzses.vercel.app'
 		}
 		// Add more projects as needed
 	];

@@ -10,7 +10,7 @@
 		},
 		{
 			name: 'Github',
-			href: 'https://github.com/lmoisz03',
+			href: 'http://github.com/lmzses',
 			icon: LogoGithub
 		}
 	];
