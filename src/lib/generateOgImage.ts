@@ -1,14 +1,18 @@
-// src/lib/generateOgImage.js
 import satori from 'satori';
 import { html } from 'satori-html';
 import { Resvg } from '@resvg/resvg-js';
-import fs from 'fs/promises';
 
-// Load fonts
-const interRegular = await fs.readFile('./static/fonts/Inter-Regular.ttf');
-const interBold = await fs.readFile('./static/fonts/Inter-Bold.ttf');
+// Font loading function
+async function loadFont(url: string) {
+	const res = await fetch(url);
+	return await res.arrayBuffer();
+}
 
 export async function generateOgImage({ title, description, author, date, readTime }) {
+	// Load fonts from a CDN or your own hosted location
+	const interRegular = await loadFont('https://lmzses.vercel.app/fonts/Inter-Regular.ttf');
+	const interBold = await loadFont('https://lmzses.vercel.app/fonts/Inter-Bold.ttf');
+
 	const markup = html`
 		<div
 			style="display: flex; flex-direction: column; justify-content: center; width: 100%; height: 100%; background: linear-gradient(to bottom right, #1e293b, #0f172a); padding: 60px;"
