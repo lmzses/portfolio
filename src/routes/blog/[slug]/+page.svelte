@@ -2,6 +2,7 @@
 <script lang="ts">
 	import { marked } from 'marked';
 	import type { PageData } from './$types';
+	import { page } from '$app/stores';
 
 	export let data: PageData;
 
@@ -20,11 +21,38 @@
 
 	$: ({ content: processedContent } = processFrontmatter(content));
 	$: htmlContent = marked(processedContent);
+
+	// Function to generate a short description from the content
+	function getDescription(content: string, maxLength = 160) {
+		const strippedContent = content.replace(/<[^>]*>/g, '');
+		return strippedContent.length > maxLength
+			? strippedContent.slice(0, maxLength - 3) + '...'
+			: strippedContent;
+	}
+
+	$: description = getDescription(processedContent);
+	$: ogImageUrl = `/og-image?title=${encodeURIComponent(post.title)}&description=${encodeURIComponent(description)}&author=${encodeURIComponent(post?.author || 'Lmzses')}&date=${encodeURIComponent(new Date(post.date).toLocaleDateString())}&readTime=${encodeURIComponent('5')}`;
 </script>
 
 <svelte:head>
 	<title>{post.title}</title>
+	<meta name="description" content={description} />
+
+	<!-- Open Graph / Facebook -->
+	<meta property="og:type" content="article" />
+	<meta property="og:url" content={$page.url.href} />
+	<meta property="og:title" content={post.title} />
+	<meta property="og:description" content={description} />
+	<meta property="og:image" content={ogImageUrl} />
+
+	<!-- Twitter -->
+	<meta property="twitter:card" content="summary_large_image" />
+	<meta property="twitter:url" content={$page.url.href} />
+	<meta property="twitter:title" content={post.title} />
+	<meta property="twitter:description" content={description} />
+	<meta property="twitter:image" content={ogImageUrl} />
 </svelte:head>
+
 <section id="blog-post" class="max-w-2xl mx-auto mb-16">
 	<article>
 		<header class="mb-8">
