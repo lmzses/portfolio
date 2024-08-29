@@ -14,12 +14,11 @@
 		Trees,
 		Code,
 		Headphones,
-		Coffee,
 		Mail,
-		Globe,
-		Linkedin
+		Globe
 	} from 'lucide-svelte';
 	import { writable } from 'svelte/store';
+	import { constants } from '$lib/consts';
 
 	let activePassion = writable('Space');
 
@@ -103,19 +102,15 @@
 		<div class="space-y-4">
 			<Card class="p-4">
 				<div class="grid grid-cols-2 gap-2">
-					<Button variant="outline" class="w-full justify-start">
+					<Button variant="outline" class="w-full justify-start" href={constants.github_link}>
 						<Github class="mr-2 h-4 w-4" />
 						GitHub
 					</Button>
-					<Button variant="outline" class="w-full justify-start">
+					<Button variant="outline" class="w-full justify-start" href={constants.x_link}>
 						<Twitter class="mr-2 h-4 w-4" />
 						Twitter/X
 					</Button>
-					<Button variant="outline" class="w-full justify-start">
-						<Linkedin class="mr-2 h-4 w-4" />
-						LinkedIn
-					</Button>
-					<Button variant="outline" class="w-full justify-start">
+					<Button variant="outline" class="w-full justify-start" href="mailto:{constants.email}">
 						<Mail class="mr-2 h-4 w-4" />
 						Email Me
 					</Button>
