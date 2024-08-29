@@ -51,7 +51,7 @@
 </script>
 
 <section id="projects" class="max-w-2xl mx-auto scroll-m-16 mb-16">
-	<h2 class="text-3xl font-semibold mb-8 text-gray-200">My Projects</h2>
+	<h2 class="text-3xl font-semibold mb-8">My Projects</h2>
 	<div class="flex flex-col gap-8">
 		{#each projects as project}
 			<Card class="flex flex-col sm:flex-row gap-2 rounded-lg overflow-hidden sm:gap-6">

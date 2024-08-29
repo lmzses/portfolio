@@ -65,7 +65,7 @@
 	<div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
 		<div class="md:col-span-2 space-y-6">
 			<p class="text-lg">
-				Hey there! I'm Lzmses, a web developer with an insatiable curiosity for both technology and
+				Hey there! I'm Lmzses, a web developer with an insatiable curiosity for both technology and
 				the world around us. My journey in tech began with a simple "Hello World" and has evolved
 				into a passion for creating digital experiences that are not just functional, but also
 				meaningful and beautiful.

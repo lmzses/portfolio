@@ -15,18 +15,10 @@ interface Gist {
 	files: { [key: string]: GistFile };
 	created_at: string;
 	updated_at: string;
-}
-
-interface BlogPost {
-	id: string;
-	title: string;
-	date: string;
-	description: string;
-	html_url: string;
-	filename: string;
-	slug: string;
-	tags: string[]; // Added tags
-	raw_url: string;
+	owner: {
+		login: string;
+		avatar_url: string;
+	};
 }
 
 async function fetchGistContent(url: string): Promise<string> {
@@ -132,7 +124,11 @@ export const GET: RequestHandler = async () => {
 					description,
 					slug: createSlug(file.filename),
 					tags,
-					raw_url: file.raw_url
+					raw_url: file.raw_url,
+					author: {
+						username: gist.owner.login,
+						avatar_url: gist.owner.avatar_url
+					}
 				};
 			});
 
