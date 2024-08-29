@@ -1,8 +1,10 @@
 <script>
 	import { Button } from '$lib/components/ui/button';
-	import { Card, CardContent } from '$lib/components/ui/card';
+	import { Card, CardContent, CardTitle, CardHeader } from '$lib/components/ui/card';
 	import { Tabs, TabsContent, TabsList, TabsTrigger } from '$lib/components/ui/tabs';
 	import { ScrollArea } from '$lib/components/ui/scroll-area';
+	import { Badge } from '$lib/components/ui/badge';
+	import { Progress } from '$lib/components/ui/progress';
 	import {
 		Github,
 		Twitter,
@@ -13,7 +15,9 @@
 		Code,
 		Headphones,
 		Coffee,
-		Mail
+		Mail,
+		Globe,
+		Linkedin
 	} from 'lucide-svelte';
 	import { writable } from 'svelte/store';
 
@@ -53,6 +57,23 @@
 				'https://ucarecdn.com/8281ebe1-96e6-4b33-b191-b6a79c3176db/StockCakeSereneNatureMoment_1724862803.jpg'
 		}
 	];
+	const skills = [
+		'JavaScript',
+		'TypeScript',
+		'React',
+		'Svelte',
+		'Node.js',
+		'Next.js',
+		'TailwindCSS',
+		'GraphQL',
+		'MongoDB',
+		'Git'
+	];
+
+	const languages = [
+		{ name: 'English', level: 'Intermediate', proficiency: 70 },
+		{ name: 'Spanish', level: 'Native', proficiency: 100 }
+	];
 </script>
 
 <svelte:head>
@@ -62,45 +83,72 @@
 <section id="about" class="max-w-2xl mx-auto mb-16">
 	<h1 class="text-4xl font-bold mb-8">About Me</h1>
 
-	<div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-		<div class="md:col-span-2 space-y-6">
+	<div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16">
+		<div class="lg:col-span-2 space-y-6">
 			<p class="text-lg">
-				Hey there! I'm Lmzses, a web developer with an insatiable curiosity for both technology and
-				the world around us. My journey in tech began with a simple "Hello World" and has evolved
-				into a passion for creating digital experiences that are not just functional, but also
-				meaningful and beautiful.
+				Hey there! I am Lmzses, a frontend developer, sometimes full stack. I have a passion for
+				coding and technology.
 			</p>
 			<p class="text-lg">
-				With a background in computer science and a love for continuous learning, I've honed my
-				skills in JavaScript, React, and Node.js. But my interests don't stop at the edge of my
-				screen. I'm equally fascinated by the cosmos, philosophical debates, scientific
-				breakthroughs, and the intricate world of animal behavior.
+				My interest in computers started when I was 15 years old; my first "Hello world" was in PHP.
+				Ever since then, I have been interested in this field. I self-learned different
+				technologies, tools, and programming languages that helped me become a better developer.
 			</p>
-			<p class="text-lg">
-				This diverse range of interests isn't just a hobby—it's the fuel that drives my creativity
-				and problem-solving in web development. Whether I'm designing an intuitive user interface or
-				architecting a complex backend system, I draw inspiration from the elegance of nature, the
-				vastness of space, and the depth of human thought.
-			</p>
-		</div>
-		<div>
-			<div class="flex flex-wrap gap-2 justify-center">
-				<Button variant="outline" size="sm" class="group" href="https://github.com/lmzses/">
-					<Code class="mr-2 h-4 w-4 group-hover:text-primary transition-colors" />
-					GitHub
-				</Button>
-				<Button variant="outline" size="sm" class="group" href="https://x.com/lmzses">
-					<Twitter class="mr-2 h-4 w-4 group-hover:text-primary transition-colors" />
-					Twitter/X
-				</Button>
+			<div class="flex flex-wrap gap-2 mt-4">
+				{#each skills as skill}
+					<Badge variant="secondary">{skill}</Badge>
+				{/each}
 			</div>
+		</div>
+		<div class="space-y-4">
+			<Card class="p-4">
+				<div class="grid grid-cols-2 gap-2">
+					<Button variant="outline" class="w-full justify-start">
+						<Github class="mr-2 h-4 w-4" />
+						GitHub
+					</Button>
+					<Button variant="outline" class="w-full justify-start">
+						<Twitter class="mr-2 h-4 w-4" />
+						Twitter/X
+					</Button>
+					<Button variant="outline" class="w-full justify-start">
+						<Linkedin class="mr-2 h-4 w-4" />
+						LinkedIn
+					</Button>
+					<Button variant="outline" class="w-full justify-start">
+						<Mail class="mr-2 h-4 w-4" />
+						Email Me
+					</Button>
+				</div>
+			</Card>
+			<Card>
+				<CardHeader>
+					<CardTitle class="flex items-center">
+						<Globe class="mr-2 h-5 w-5" />
+						Languages
+					</CardTitle>
+				</CardHeader>
+				<CardContent>
+					<ul class="space-y-4">
+						{#each languages as lang}
+							<li class="flex flex-col">
+								<div class="flex justify-between mb-1">
+									<span>{lang.name}</span>
+									<span class="text-muted-foreground">{lang.level}</span>
+								</div>
+								<Progress value={lang.proficiency} class="h-2" />
+							</li>
+						{/each}
+					</ul>
+				</CardContent>
+			</Card>
 		</div>
 	</div>
 
 	<h2 class="text-3xl font-semibold mb-6">My Passions</h2>
 	<div class="mb-16">
 		<Tabs value={$activePassion} on:change={(event) => ($activePassion = event.detail)}>
-			<TabsList class="grid w-full h-fit gap-2 grid-cols-2 md:grid-cols-4">
+			<TabsList class="grid w-full h-fit gap-2 grid-cols-2 sm:grid-cols-4">
 				{#each passions as passion}
 					<TabsTrigger value={passion.title} class="flex items-center">
 						<svelte:component this={passion.icon} class="mr-2 h-4 w-4" />
@@ -112,11 +160,11 @@
 				<TabsContent value={passion.title}>
 					<Card>
 						<CardContent class="p-6">
-							<div class="flex flex-col md:flex-row gap-6">
+							<div class="flex flex-col sm:flex-row gap-6">
 								<img
 									src={passion.image}
 									alt={passion.title}
-									class="w-full md:w-1/2 h-48 md:h-auto object-cover rounded-lg"
+									class="w-full sm:w-1/2 h-48 sm:h-auto object-cover rounded-lg"
 								/>
 								<div class="flex-1">
 									<h3 class="text-2xl font-semibold mb-4">{passion.title}</h3>
@@ -131,7 +179,7 @@
 	</div>
 
 	<h2 class="text-3xl font-semibold mb-6">More About Me</h2>
-	<div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
+	<div class="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-16">
 		<Card>
 			<CardContent class="p-6">
 				<h3 class="text-xl font-semibold mb-4 flex items-center">
@@ -139,8 +187,8 @@
 					Coding Philosophy
 				</h3>
 				<p class="text-muted-foreground">
-					I believe in writing code to build better products that people wants. Or sometimes code
-					for build something you always wanted to exists, or make an existing product better.
+					I believe in writing code to build better products that people want. Or sometimes code to
+					build something you always wanted to exist, or make an existing product better.
 				</p>
 			</CardContent>
 		</Card>
@@ -152,10 +200,9 @@
 				</h3>
 				<ScrollArea class="h-[200px] w-full rounded-md border p-4">
 					<ul class="space-y-2">
-						<li>🎧 Listening music and watching IG reels</li>
+						<li>🎧 Listening to music and watching IG reels</li>
 						<li>🔭 Stargazing and astrophotography</li>
 						<li>🎮 Playing strategy games and puzzle solvers</li>
-
 						<li>✍️ Writing blog posts about tech and life musings</li>
 					</ul>
 				</ScrollArea>

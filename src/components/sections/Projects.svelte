@@ -3,8 +3,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { ExternalLink } from 'lucide-svelte';
 	import Icon from '@iconify/svelte';
-	import { Card, CardHeader, CardTitle, CardContent } from '$lib/components/ui/card';
-	import CardFooter from '$lib/components/ui/card/card-footer.svelte';
+	import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '$lib/components/ui/card';
 	let tags = {
 		SVELTE: {
 			name: 'Svelte',
@@ -54,19 +53,13 @@
 	<h2 class="text-3xl font-semibold mb-8">My Projects</h2>
 	<div class="flex flex-col gap-8">
 		{#each projects as project}
-			<Card class="flex flex-col sm:flex-row gap-2 rounded-lg overflow-hidden sm:gap-6">
-				<CardHeader class="w-full md:w-1/2">
-					<div
-						class="relative flex flex-col items-center col-span-6 row-span-5 gap-8 transition duration-500 ease-in-out transform shadow-xl overflow-clip rounded-xl sm:rounded-xl md:group-hover:-translate-y-1 md:group-hover:shadow-2xl lg:border lg:border-gray-800 lg:hover:border-gray-700 lg:hover:bg-gray-800/50"
-					>
-						<img
-							src={project.image}
-							alt={project.title}
-							class="object-cover object-top w-full h-56 transition duration-500 sm:h-full md:scale-110 md:group-hover:scale-105"
-						/>
-					</div>
-				</CardHeader>
-				<CardContent class="w-full md:w-1/2 md:max-w-lg">
+			<Card class="flex flex-col rounded-lg overflow-hidden">
+				<img
+					src={project.image}
+					alt={project.title}
+					class="object-cover object-top w-full h-56 transition duration-500 md:scale-110 md:group-hover:scale-105"
+				/>
+				<CardContent class="flex-grow p-6">
 					<h3 class="text-xl font-semibold mb-2">{project.title}</h3>
 					<div class="flex flex-wrap my-2">
 						<ul class="flex flex-row gap-2">
@@ -83,13 +76,16 @@
 						</ul>
 					</div>
 					<p class="mb-4">{project.description}</p>
+				</CardContent>
+
+				<CardFooter>
 					<div class="flex justify-between w-full">
-						<Button variant="ghost" size="sm" class="group">
-							View Project
-							<ExternalLink class="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+						<Button variant="ghost" size="sm" class="group" href={project.githubLink}>
+							<Icon icon="tabler:brand-github" class="mr-2 h-4 w-4" />
+							Github
 						</Button>
 					</div>
-				</CardContent>
+				</CardFooter>
 			</Card>
 		{/each}
 	</div>
