@@ -69,7 +69,7 @@
 	<meta name="twitter:image" content={ogImageUrl} />
 </svelte:head>
 
-<section id="blog-post" class="max-w-2xl mx-auto mb-16">
+<section id="blog-post" class="max-w-2xl mx-auto py-16 mb-16">
 	<article>
 		<header class="mb-8">
 			<h1 class="text-3xl font-bold mb-2">{post.title}</h1>

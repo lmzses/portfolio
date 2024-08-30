@@ -13,7 +13,7 @@
 <svelte:head>
 	<title>Blog Posts</title>
 </svelte:head>
-<section id="blog" class="max-w-2xl mx-auto mb-16">
+<section id="blog" class="max-w-2xl mx-auto py-16 mb-16">
 	<h1 class="text-4xl font-bold mb-8">Blog</h1>
 	{#if error}
 		<p class="text-red-500">{error}</p>

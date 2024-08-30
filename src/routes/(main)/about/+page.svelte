@@ -79,7 +79,7 @@
 	<title>About me - Lmzses</title>
 </svelte:head>
 
-<section id="about" class="max-w-2xl mx-auto mb-16">
+<section id="about" class="max-w-2xl mx-auto py-16 mb-16">
 	<h1 class="text-4xl font-bold mb-8">About Me</h1>
 
 	<div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16">

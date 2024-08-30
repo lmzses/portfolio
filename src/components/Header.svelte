@@ -10,6 +10,7 @@
 
 			<a href="/about" class="text-sm hover:text-primary transition-colors">About</a>
 			<a href="/blog" class="text-sm hover:text-primary transition-colors">Blog</a>
+			<a href="/resources" class="text-sm hover:text-primary transition-colors">Resources</a>
 		</nav>
 	</div>
 </header>
