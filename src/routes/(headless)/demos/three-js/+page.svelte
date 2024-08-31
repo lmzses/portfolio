@@ -2,101 +2,82 @@
 	import { onMount, onDestroy } from 'svelte';
 	import * as THREE from 'three';
 	import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-	import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 	import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 	import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 	import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
-	import { OutlinePass } from 'three/examples/jsm/postprocessing/OutlinePass.js';
 	import { Button } from '$lib/components/ui/button';
 	import { Slider } from '$lib/components/ui/slider';
 	import { Switch } from '$lib/components/ui/switch';
 	import { Label } from '$lib/components/ui/label';
-	import { Card } from '$lib/components/ui/card';
+	import { Card, CardContent } from '$lib/components/ui/card';
 
 	let mountRef: HTMLDivElement;
-	let rotationSpeed = 0.001;
-	let satelliteCount = 5;
+	let rotationSpeed = 0.0005;
 	let showAtmosphere = true;
-	let showClouds = true;
-	let dayTime = true;
+	let showCityLights = true;
 	let selectedLocation: string | null = null;
 
 	let scene: THREE.Scene;
 	let camera: THREE.PerspectiveCamera;
 	let renderer: THREE.WebGLRenderer;
 	let earth: THREE.Mesh;
-	let clouds: THREE.Mesh;
+	let cityLights: THREE.Mesh;
 	let atmosphere: THREE.Mesh;
-	let satelliteGroup: THREE.Group;
 	let controls: OrbitControls;
 	let composer: EffectComposer;
-	let outlinePass: OutlinePass;
+	let clouds: THREE.Mesh;
+	let moon: THREE.Mesh;
 	let locationMarkers: THREE.Mesh[] = [];
 
 	const locations = [
 		{ name: 'New York', lat: 40.7128, lon: -74.006 },
 		{ name: 'London', lat: 51.5074, lon: -0.1278 },
 		{ name: 'Tokyo', lat: 35.6762, lon: 139.6503 },
-		{ name: 'Sydney', lat: -33.8688, lon: 151.2093 }
+		{ name: 'Sydney', lat: -33.8688, lon: 151.2093 },
+		{ name: 'Rio de Janeiro', lat: -22.9068, lon: -43.1729 }
 	];
 
+	function latLonToVector3(lat: number, lon: number, radius: number) {
+		const phi = (90 - lat) * (Math.PI / 180);
+		const theta = (lon + 180) * (Math.PI / 180);
+		const x = -(radius * Math.sin(phi) * Math.cos(theta));
+		const z = radius * Math.sin(phi) * Math.sin(theta);
+		const y = radius * Math.cos(phi);
+		return new THREE.Vector3(x, y, z);
+	}
+
 	onMount(() => {
-		if (typeof window !== 'undefined') {
-			initScene();
-			animate();
-			window.addEventListener('resize', handleResize);
-			window.addEventListener('mousemove', onMouseMove as EventListener);
-		}
-	});
-
-	onDestroy(() => {
-		if (typeof window !== 'undefined') {
-			window.removeEventListener('resize', handleResize);
-			window.removeEventListener('mousemove', onMouseMove);
-			mountRef?.removeChild(renderer.domElement);
-		}
-	});
-
-	function initScene() {
+		// Scene setup
 		scene = new THREE.Scene();
-		camera = new THREE.PerspectiveCamera(
-			75,
-			typeof window !== 'undefined' ? window.innerWidth / window.innerHeight : 1,
-			0.1,
-			1000
-		);
+		camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 		renderer = new THREE.WebGLRenderer({ antialias: true });
-		if (typeof window !== 'undefined') {
-			renderer.setSize(window.innerWidth, window.innerHeight);
-		}
+		renderer.setSize(window.innerWidth, window.innerHeight);
 		mountRef.appendChild(renderer.domElement);
 
 		// Earth
 		const earthGeometry = new THREE.SphereGeometry(5, 64, 64);
-		const earthTexture = new THREE.TextureLoader().load('/earth_daymap.jpg');
-		const earthNightTexture = new THREE.TextureLoader().load('/earth_nightmap.jpg');
-		const normalMap = new THREE.TextureLoader().load('/earth_normal_map.jpg');
-		const specularMap = new THREE.TextureLoader().load('/earth_specular_map.jpg');
+		const earthTexture = new THREE.TextureLoader().load('/textures/planets/earth_day_4096.jpg');
 		const earthMaterial = new THREE.MeshPhongMaterial({
 			map: earthTexture,
-			normalMap: normalMap,
-			specularMap: specularMap,
 			specular: new THREE.Color(0x333333),
-			shininess: 25
-		} as THREE.MeshPhongMaterialParameters);
+			shininess: 10, // Increased shininess
+			bumpMap: earthTexture, // Added bump map for more detail
+			bumpScale: 0.05 // Adjust this value as needed
+		});
 		earth = new THREE.Mesh(earthGeometry, earthMaterial);
 		scene.add(earth);
 
-		// Clouds
-		const cloudGeometry = new THREE.SphereGeometry(5.05, 64, 64);
-		const cloudTexture = new THREE.TextureLoader().load('/earth_clouds.png');
-		const cloudMaterial = new THREE.MeshPhongMaterial({
-			map: cloudTexture,
+		// City Lights
+		const lightsGeometry = new THREE.SphereGeometry(5.01, 64, 64);
+		const lightsTexture = new THREE.TextureLoader().load('/textures/planets/earth_lights_2048.png');
+		const lightsMaterial = new THREE.MeshBasicMaterial({
+			map: lightsTexture,
+			blending: THREE.AdditiveBlending,
 			transparent: true,
-			opacity: 0.4
+			opacity: 0.8
 		});
-		clouds = new THREE.Mesh(cloudGeometry, cloudMaterial);
-		scene.add(clouds);
+		cityLights = new THREE.Mesh(lightsGeometry, lightsMaterial);
+		scene.add(cityLights);
 
 		// Atmosphere
 		const atmosphereGeometry = new THREE.SphereGeometry(5.1, 64, 64);
@@ -119,32 +100,35 @@
 			side: THREE.BackSide
 		});
 		atmosphere = new THREE.Mesh(atmosphereGeometry, atmosphereMaterial);
+		atmosphere = new THREE.Mesh(atmosphereGeometry, atmosphereMaterial);
 		scene.add(atmosphere);
 
-		// Satellites
-		satelliteGroup = new THREE.Group();
-		scene.add(satelliteGroup);
-		updateSatellites(satelliteCount);
+		// Clouds
+		const cloudsGeometry = new THREE.SphereGeometry(5.05, 64, 64);
+		const cloudsTexture = new THREE.TextureLoader().load('/textures/planets/earth_clouds_2048.png');
+		const cloudsMaterial = new THREE.MeshPhongMaterial({
+			map: cloudsTexture,
+			transparent: true,
+			opacity: 0.8
+		});
+		clouds = new THREE.Mesh(cloudsGeometry, cloudsMaterial);
+		scene.add(clouds);
 
-		// Space station
-		const loader = new GLTFLoader();
-		loader.load(
-			'/space_station.glb',
-			(gltf) => {
-				const spaceStation = gltf.scene;
-				spaceStation.scale.set(0.1, 0.1, 0.1);
-				spaceStation.position.set(8, 0, 0);
-				scene.add(spaceStation);
-			},
-			undefined,
-			(error) => {
-				console.error('An error occurred while loading the space station model:', error);
-			}
-		);
+		// Moon
+		const moonGeometry = new THREE.SphereGeometry(0.5, 32, 32);
+		const moonTexture = new THREE.TextureLoader().load('/textures/planets/moon_1024.jpg');
+		const moonMaterial = new THREE.MeshPhongMaterial({
+			map: moonTexture,
+			bumpMap: moonTexture,
+			bumpScale: 0.002
+		});
+		moon = new THREE.Mesh(moonGeometry, moonMaterial);
+		moon.position.set(8, 0, 0);
+		scene.add(moon);
 
 		// Stars
 		const starGeometry = new THREE.BufferGeometry();
-		const starMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 0.1 });
+		const starMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 0.05 });
 		const starVertices = [];
 		for (let i = 0; i < 10000; i++) {
 			const x = (Math.random() - 0.5) * 2000;
@@ -157,9 +141,9 @@
 		scene.add(stars);
 
 		// Lighting
-		const ambientLight = new THREE.AmbientLight(0x404040);
+		const ambientLight = new THREE.AmbientLight(0xffffff, 0.5); // Increased intensity and changed color to white
 		scene.add(ambientLight);
-		const pointLight = new THREE.PointLight(0xffffff, 1);
+		const pointLight = new THREE.PointLight(0xffffff, 1.5); // Increased intensity
 		pointLight.position.set(10, 10, 10);
 		scene.add(pointLight);
 
@@ -170,6 +154,8 @@
 		controls = new OrbitControls(camera, renderer.domElement);
 		controls.enableDamping = true;
 		controls.dampingFactor = 0.05;
+		controls.minDistance = 6;
+		controls.maxDistance = 20;
 
 		// Post-processing
 		composer = new EffectComposer(renderer);
@@ -177,113 +163,83 @@
 		composer.addPass(renderPass);
 		const bloomPass = new UnrealBloomPass(
 			new THREE.Vector2(window.innerWidth, window.innerHeight),
-			1.5,
+			0.5,
 			0.4,
 			0.85
 		);
 		composer.addPass(bloomPass);
-		outlinePass = new OutlinePass(
-			new THREE.Vector2(window.innerWidth, window.innerHeight),
-			scene,
-			camera
-		);
-		composer.addPass(outlinePass);
 
 		// Location markers
 		locations.forEach((location) => {
-			const markerGeometry = new THREE.SphereGeometry(0.1, 16, 16);
+			const markerGeometry = new THREE.SphereGeometry(0.05, 16, 16);
 			const markerMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
 			const marker = new THREE.Mesh(markerGeometry, markerMaterial);
-			const position = latLonToVector3(location.lat, location.lon, 5.1);
+			const position = latLonToVector3(location.lat, location.lon, 5.05);
 			marker.position.copy(position);
 			earth.add(marker);
 			locationMarkers.push(marker);
 		});
-	}
 
-	function updateSatellites(count: number) {
-		satelliteGroup.clear();
-		const satelliteGeometry = new THREE.SphereGeometry(0.1, 16, 16);
-		const satelliteMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
-		for (let i = 0; i < count; i++) {
-			const satellite = new THREE.Mesh(satelliteGeometry, satelliteMaterial);
-			const angle = (i / count) * Math.PI * 2;
-			satellite.position.set(Math.cos(angle) * 7, Math.sin(angle) * 7, 0);
-			satelliteGroup.add(satellite);
+		// Animation
+		function animate() {
+			requestAnimationFrame(animate);
+			earth.rotation.y += rotationSpeed;
+			cityLights.rotation.y += rotationSpeed;
+			clouds.rotation.y += rotationSpeed * 1.1; // Clouds rotate slightly faster
+
+			// Moon orbit
+			const time = Date.now() * 0.001;
+			moon.position.x = Math.cos(time * 0.1) * 8;
+			moon.position.z = Math.sin(time * 0.1) * 8;
+			moon.rotation.y += rotationSpeed * 0.1;
+
+			controls.update();
+			composer.render();
 		}
-	}
+		animate();
 
-	function latLonToVector3(lat: number, lon: number, radius: number) {
-		const phi = (90 - lat) * (Math.PI / 180);
-		const theta = (lon + 180) * (Math.PI / 180);
-		const x = -(radius * Math.sin(phi) * Math.cos(theta));
-		const z = radius * Math.sin(phi) * Math.sin(theta);
-		const y = radius * Math.cos(phi);
-		return new THREE.Vector3(x, y, z);
-	}
-
-	function animate() {
-		requestAnimationFrame(animate);
-		earth.rotation.y += rotationSpeed;
-		clouds.rotation.y += rotationSpeed * 1.1;
-		satelliteGroup.rotation.y += 0.002;
-		controls.update();
-		composer.render();
-	}
-
-	function handleResize() {
-		if (typeof window !== 'undefined') {
+		// Resize handler
+		function handleResize() {
 			camera.aspect = window.innerWidth / window.innerHeight;
 			camera.updateProjectionMatrix();
 			renderer.setSize(window.innerWidth, window.innerHeight);
 			composer.setSize(window.innerWidth, window.innerHeight);
 		}
-	}
-	function onMouseMove(event: MouseEvent) {
-		if (typeof window === 'undefined') return;
+		window.addEventListener('resize', handleResize);
 
-		const mouse = new THREE.Vector2(
-			(event.clientX / window.innerWidth) * 2 - 1,
-			-(event.clientY / window.innerHeight) * 2 + 1
-		);
-
+		// Raycaster for location selection
 		const raycaster = new THREE.Raycaster();
-		raycaster.setFromCamera(mouse, camera);
-		const intersects = raycaster.intersectObjects(locationMarkers);
+		const mouse = new THREE.Vector2();
 
-		if (intersects.length > 0) {
-			const index = locationMarkers.indexOf(intersects[0].object as THREE.Mesh);
-			selectedLocation = locations[index].name;
-			outlinePass.selectedObjects = [intersects[0].object];
-		} else {
-			selectedLocation = null;
-			outlinePass.selectedObjects = [];
-		}
-	}
+		function onMouseMove(event: MouseEvent) {
+			mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+			mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
-	$: {
-		if (satelliteGroup) {
-			updateSatellites(satelliteCount);
+			raycaster.setFromCamera(mouse, camera);
+			const intersects = raycaster.intersectObjects(locationMarkers);
+
+			if (intersects.length > 0) {
+				const index = locationMarkers.indexOf(intersects[0].object as THREE.Mesh);
+				selectedLocation = locations[index].name;
+			} else {
+				selectedLocation = null;
+			}
 		}
-	}
+		window.addEventListener('mousemove', onMouseMove);
+
+		return () => {
+			window.removeEventListener('resize', handleResize);
+			window.removeEventListener('mousemove', onMouseMove);
+			mountRef.removeChild(renderer.domElement);
+		};
+	});
 
 	$: {
 		if (atmosphere) {
 			atmosphere.visible = showAtmosphere;
 		}
-	}
-
-	$: {
-		if (clouds) {
-			clouds.visible = showClouds;
-		}
-	}
-
-	$: {
-		if (earth) {
-			earth.material.map = dayTime
-				? new THREE.TextureLoader().load('/earth_daymap.jpg')
-				: new THREE.TextureLoader().load('/earth_nightmap.jpg');
+		if (cityLights) {
+			cityLights.visible = showCityLights;
 		}
 	}
 </script>
@@ -291,28 +247,20 @@
 <div class="relative w-full h-screen bg-black">
 	<div bind:this={mountRef} class="w-full h-full" />
 	<Card class="absolute bottom-4 left-4 w-64 bg-black/50 text-white">
-		<div class="p-4 space-y-4">
+		<CardContent class="p-4 space-y-4">
 			<div class="flex items-center justify-between">
 				<Label for="atmosphere-toggle">Atmosphere</Label>
 				<Switch id="atmosphere-toggle" bind:checked={showAtmosphere} />
 			</div>
 			<div class="flex items-center justify-between">
-				<Label for="clouds-toggle">Clouds</Label>
-				<Switch id="clouds-toggle" bind:checked={showClouds} />
-			</div>
-			<div class="flex items-center justify-between">
-				<Label for="day-night-toggle">Day/Night</Label>
-				<Switch id="day-night-toggle" bind:checked={dayTime} />
+				<Label for="city-lights-toggle">City Lights</Label>
+				<Switch id="city-lights-toggle" bind:checked={showCityLights} />
 			</div>
 			<div class="space-y-2">
 				<Label for="rotation-speed">Rotation Speed</Label>
-				<Slider id="rotation-speed" min={0} max={0.01} step={0.0001} value={[rotationSpeed]} />
-			</div>
-			<div class="space-y-2">
-				<Label for="satellite-count">Satellites</Label>
-				<Slider id="satellite-count" min={0} max={20} step={1} value={[satelliteCount]} />
-			</div>
-		</div>
+				<Slider id="rotation-speed" min={0} max={0.002} step={0.0001} value={[rotationSpeed]} />
+			</div></CardContent
+		>
 	</Card>
 	{#if selectedLocation}
 		<div class="absolute top-4 left-4 bg-black/50 text-white p-2 rounded">
